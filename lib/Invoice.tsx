@@ -6,6 +6,8 @@ import {
   Image,
   StyleSheet,
 } from "@react-pdf/renderer";
+import { GarageLogo } from "./GarageLogo";
+import { CheckIcon, CrossIcon } from "./pdfIcons";
 import type { BillTo, DecodedSpec, InvoiceLineItem, Listing } from "./types";
 
 const ORANGE = "#f97316";
@@ -292,6 +294,10 @@ const styles = StyleSheet.create({
     textAlign: "right",
     maxWidth: "60%",
   },
+  specIconWrap: {
+    alignItems: "flex-end",
+    justifyContent: "center",
+  },
 });
 
 function formatUsd(amount: number): string {
@@ -413,7 +419,10 @@ export function Invoice({
       <Page size="LETTER" style={styles.page}>
         <View style={styles.topRow}>
           <View style={styles.fromBlock}>
-            <Text style={styles.fromName}>Garage Technologies Inc.</Text>
+            <View style={{ marginBottom: 8 }}>
+              <GarageLogo width={90} />
+            </View>
+            <Text style={styles.fromLine}>Garage Technologies Inc.</Text>
             <Text style={styles.fromLine}>sales@withgarage.com</Text>
             <Text style={styles.fromLine}>shopgarage.com</Text>
           </View>
@@ -572,18 +581,32 @@ export function Invoice({
           <>
             <Text style={styles.sectionTitle}>Specifications</Text>
             <View style={styles.specsGrid}>
-              {specs.map((spec, i) => (
-                <View
-                  key={`${spec.label}-${i}`}
-                  style={[
-                    styles.specItem,
-                    i % 2 === 1 ? styles.specItemRight : {},
-                  ]}
-                >
-                  <Text style={styles.specLabel}>{spec.label}</Text>
-                  <Text style={styles.specValue}>{spec.value}</Text>
-                </View>
-              ))}
+              {specs.map((spec, i) => {
+                const isCheck = spec.value === "✓";
+                const isCross = spec.value === "✗";
+                return (
+                  <View
+                    key={`${spec.label}-${i}`}
+                    style={[
+                      styles.specItem,
+                      i % 2 === 1 ? styles.specItemRight : {},
+                    ]}
+                  >
+                    <Text style={styles.specLabel}>{spec.label}</Text>
+                    {isCheck ? (
+                      <View style={styles.specIconWrap}>
+                        <CheckIcon size={12} />
+                      </View>
+                    ) : isCross ? (
+                      <View style={styles.specIconWrap}>
+                        <CrossIcon size={12} />
+                      </View>
+                    ) : (
+                      <Text style={styles.specValue}>{spec.value}</Text>
+                    )}
+                  </View>
+                );
+              })}
             </View>
           </>
         ) : null}
