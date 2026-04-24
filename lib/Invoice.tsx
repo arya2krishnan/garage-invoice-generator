@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
 
   terms: {
-    marginTop: 32,
+    marginTop: 20,
   },
   termsLabel: {
     fontFamily: "Helvetica-Bold",
@@ -171,12 +171,54 @@ const styles = StyleSheet.create({
   termsBullet: {
     color: ORANGE,
     fontFamily: "Helvetica-Bold",
-    width: 18,
+    width: 10,
     flexShrink: 0,
   },
   termsText: {
     color: DARK,
     flex: 1,
+  },
+  footnoteMarker: {
+    fontSize: 7,
+    color: ORANGE,
+    fontFamily: "Helvetica-Bold",
+  },
+  notesWrap: {
+    marginTop: 10,
+  },
+  notesLabel: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    color: MUTED,
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+    marginBottom: 3,
+  },
+  notesItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 1,
+    fontSize: 8,
+    color: MUTED,
+  },
+  notesMarker: {
+    width: 10,
+    color: ORANGE,
+    fontFamily: "Helvetica-Bold",
+    fontSize: 8,
+  },
+  notesText: {
+    flex: 1,
+    color: MUTED,
+    fontSize: 8,
+  },
+  sourceLine: {
+    marginTop: 8,
+    fontSize: 8,
+    color: MUTED,
+  },
+  sourceUrl: {
+    color: ORANGE,
   },
 
   pageFooter: {
@@ -329,10 +371,38 @@ export function Invoice({
   const taxAmt = tax?.amount ?? 0;
   const total = subtotal + shippingAmt + taxAmt;
   const categoryName = listing.category?.name ?? "Vehicle";
-  const hasWarrantyRow = lineItems.some((li) =>
+
+  // Assign footnote markers in document order: warranty (line item) →
+  // shipping (totals) → tax (totals). Store as strings so we can swap to
+  // unicode superscripts later if desired.
+  const footnotes: Array<{ marker: string; text: string }> = [];
+  const warrantyLineIndex = lineItems.findIndex((li) =>
     li.label.toLowerCase().includes("warranty")
   );
-  const hasEstimates = Boolean(shipping) || Boolean(tax) || hasWarrantyRow;
+  let warrantyMarker: string | undefined;
+  if (warrantyLineIndex !== -1) {
+    warrantyMarker = String(footnotes.length + 1);
+    footnotes.push({
+      marker: warrantyMarker,
+      text: "Warranty quoted via Garage's /warranty/quote endpoint. Final pricing confirmed on order.",
+    });
+  }
+  let shippingMarker: string | undefined;
+  if (shipping) {
+    shippingMarker = String(footnotes.length + 1);
+    footnotes.push({
+      marker: shippingMarker,
+      text: `Freight shipping estimated to ZIP ${shipping.destinationZip} via Garage's /shipment/freight/quote endpoint. Prices subject to change.`,
+    });
+  }
+  let taxMarker: string | undefined;
+  if (tax) {
+    taxMarker = String(footnotes.length + 1);
+    footnotes.push({
+      marker: taxMarker,
+      text: `Sales tax estimated at ${tax.state} state rate (${(tax.rate * 100).toFixed(2)}%). Local rates and government tax-exemption may apply.`,
+    });
+  }
 
   return (
     <Document
@@ -382,21 +452,29 @@ export function Invoice({
           <Text style={styles.cellUnit}>Unit Price</Text>
           <Text style={styles.cellAmount}>Amount</Text>
         </View>
-        {lineItems.map((li, i) => (
-          <View key={i} style={styles.tableRow}>
-            <Text style={styles.cellQty}>{li.qty}</Text>
-            <View style={styles.cellDesc}>
-              <Text style={styles.descTitle}>{li.label}</Text>
-              {li.sublabel ? (
-                <Text style={styles.descSub}>{li.sublabel}</Text>
-              ) : null}
+        {lineItems.map((li, i) => {
+          const marker = i === warrantyLineIndex ? warrantyMarker : undefined;
+          return (
+            <View key={i} style={styles.tableRow}>
+              <Text style={styles.cellQty}>{li.qty}</Text>
+              <View style={styles.cellDesc}>
+                <Text style={styles.descTitle}>
+                  {li.label}
+                  {marker ? (
+                    <Text style={styles.footnoteMarker}> {marker}</Text>
+                  ) : null}
+                </Text>
+                {li.sublabel ? (
+                  <Text style={styles.descSub}>{li.sublabel}</Text>
+                ) : null}
+              </View>
+              <Text style={styles.cellUnit}>{formatUsd(li.unitPrice)}</Text>
+              <Text style={styles.cellAmount}>
+                {formatUsd(li.qty * li.unitPrice)}
+              </Text>
             </View>
-            <Text style={styles.cellUnit}>{formatUsd(li.unitPrice)}</Text>
-            <Text style={styles.cellAmount}>
-              {formatUsd(li.qty * li.unitPrice)}
-            </Text>
-          </View>
-        ))}
+          );
+        })}
 
         <View style={styles.totalsWrap}>
           <View style={styles.totalsInner}>
@@ -409,6 +487,9 @@ export function Invoice({
                 {shipping
                   ? `Estimated shipping (ZIP ${shipping.destinationZip})`
                   : "Shipping"}
+                {shippingMarker ? (
+                  <Text style={styles.footnoteMarker}> {shippingMarker}</Text>
+                ) : null}
               </Text>
               <Text>{shipping ? formatUsd(shipping.price) : "—"}</Text>
             </View>
@@ -419,6 +500,9 @@ export function Invoice({
                       2
                     )}%)`
                   : "Tax"}
+                {taxMarker ? (
+                  <Text style={styles.footnoteMarker}> {taxMarker}</Text>
+                ) : null}
               </Text>
               <Text>{tax ? formatUsd(tax.amount) : "—"}</Text>
             </View>
@@ -431,46 +515,35 @@ export function Invoice({
 
         <View style={styles.terms}>
           <Text style={styles.termsLabel}>Terms and Conditions</Text>
-          {(() => {
-            const items: string[] = [];
-            items.push(
-              "This is a quote for board approval. Final pricing, taxes, and shipping will be confirmed on order."
-            );
-            if (hasEstimates) {
-              const parts: string[] = [];
-              if (shipping) parts.push("shipping");
-              if (tax) parts.push("sales tax");
-              if (hasWarrantyRow) parts.push("warranty");
-              const joined =
-                parts.length === 1
-                  ? parts[0]
-                  : parts.length === 2
-                  ? `${parts[0]} and ${parts[1]}`
-                  : `${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]}`;
-              const zipNote = shipping
-                ? ` based on destination ZIP ${shipping.destinationZip}`
-                : "";
-              const taxNote = tax
-                ? " Sales tax is a state-rate estimate; local rates and government tax-exemption may apply."
-                : "";
-              items.push(
-                `Estimated ${joined}${zipNote}. Prices are subject to change; Garage will confirm the final quote on order.${taxNote}`
-              );
-            }
-            items.push(
-              "Please make checks payable to: Garage Technologies Inc."
-            );
-            items.push("Questions: sales@withgarage.com");
-            if (listingUrl) {
-              items.push(`Source listing: ${listingUrl}`);
-            }
-            return items.map((text, i) => (
-              <View key={i} style={styles.termsItem}>
-                <Text style={styles.termsBullet}>{i + 1}.</Text>
-                <Text style={styles.termsText}>{text}</Text>
-              </View>
-            ));
-          })()}
+          {[
+            "This is a quote for board approval. Final pricing, taxes, and shipping will be confirmed on order.",
+            "Please make checks payable to: Garage Technologies Inc.",
+            "Questions: sales@withgarage.com",
+          ].map((text, i) => (
+            <View key={i} style={styles.termsItem}>
+              <Text style={styles.termsBullet}>•</Text>
+              <Text style={styles.termsText}>{text}</Text>
+            </View>
+          ))}
+
+          {footnotes.length > 0 && (
+            <View style={styles.notesWrap}>
+              <Text style={styles.notesLabel}>Notes</Text>
+              {footnotes.map((fn) => (
+                <View key={fn.marker} style={styles.notesItem}>
+                  <Text style={styles.notesMarker}>{fn.marker}</Text>
+                  <Text style={styles.notesText}>{fn.text}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {listingUrl ? (
+            <Text style={styles.sourceLine}>
+              Source listing:{" "}
+              <Text style={styles.sourceUrl}>{listingUrl}</Text>
+            </Text>
+          ) : null}
         </View>
 
         <View style={styles.pageFooter} fixed>
