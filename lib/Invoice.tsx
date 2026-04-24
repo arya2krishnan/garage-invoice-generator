@@ -384,7 +384,7 @@ export function Invoice({
         </View>
         {lineItems.map((li, i) => (
           <View key={i} style={styles.tableRow}>
-            <Text style={styles.cellQty}>{li.qty.toFixed(2)}</Text>
+            <Text style={styles.cellQty}>{li.qty}</Text>
             <View style={styles.cellDesc}>
               <Text style={styles.descTitle}>{li.label}</Text>
               {li.sublabel ? (
