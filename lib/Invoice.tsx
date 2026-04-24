@@ -9,192 +9,251 @@ import {
 import type { Listing } from "./types";
 
 const ORANGE = "#f97316";
+const ORANGE_SOFT = "#fff7ed";
 const DARK = "#1a1a1a";
-const MUTED = "#525252";
-const BORDER = "#e5e5e5";
-const SOFT_BG = "#fafafa";
+const MUTED = "#6b7280";
+const BORDER = "#e5e7eb";
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 36,
-    paddingBottom: 48,
-    paddingHorizontal: 40,
+    paddingTop: 48,
+    paddingBottom: 56,
+    paddingHorizontal: 56,
     fontSize: 10,
     color: DARK,
     fontFamily: "Helvetica",
+    lineHeight: 1.5,
   },
-  headerBar: {
-    height: 6,
-    backgroundColor: ORANGE,
-    marginBottom: 20,
-  },
-  headerRow: {
+  topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-end",
+    alignItems: "flex-start",
+    marginBottom: 48,
+  },
+  fromBlock: {
+    maxWidth: 260,
+  },
+  fromName: {
+    fontSize: 12,
+    fontFamily: "Helvetica-Bold",
     marginBottom: 4,
   },
-  wordmark: {
-    fontSize: 24,
-    fontFamily: "Helvetica-Bold",
-    letterSpacing: 2,
+  fromLine: {
+    color: MUTED,
   },
-  wordmarkOrange: {
-    color: ORANGE,
-  },
-  invoiceLabel: {
-    fontSize: 20,
+  invoiceTitle: {
+    fontSize: 36,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 4,
-    color: DARK,
+    color: ORANGE,
+    marginTop: 20,
   },
-  subHeaderRow: {
+
+  metaRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 24,
+    alignItems: "flex-start",
+    marginBottom: 36,
+  },
+  billTo: {
+    maxWidth: 260,
+  },
+  billToLabel: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: ORANGE,
+    marginBottom: 6,
+  },
+  billToName: {
+    fontSize: 12,
+    marginBottom: 2,
+  },
+  billToLine: {
     color: MUTED,
   },
-  partyBlock: {
+  metaCol: {
+    width: 220,
+  },
+  metaRowItem: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
-    gap: 20,
-  },
-  partyCol: {
-    flex: 1,
-  },
-  partyLabel: {
-    fontSize: 8,
-    color: MUTED,
-    textTransform: "uppercase",
-    letterSpacing: 1,
     marginBottom: 4,
   },
-  partyBody: {
-    lineHeight: 1.4,
+  metaLabel: {
+    fontFamily: "Helvetica-Bold",
+    color: ORANGE,
   },
+  metaValue: {
+    color: DARK,
+  },
+
   heroImage: {
     width: "100%",
-    height: 180,
+    height: 160,
     objectFit: "cover",
-    marginBottom: 16,
+    marginBottom: 20,
     borderRadius: 4,
   },
+
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: SOFT_BG,
-    borderBottom: `1px solid ${BORDER}`,
-    borderTop: `1px solid ${BORDER}`,
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    fontSize: 8,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    color: MUTED,
+    backgroundColor: ORANGE,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    color: "#ffffff",
+    fontFamily: "Helvetica-Bold",
+    fontSize: 10,
   },
   tableRow: {
     flexDirection: "row",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
     borderBottom: `1px solid ${BORDER}`,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
     alignItems: "flex-start",
   },
-  cellItem: { flex: 4, paddingRight: 8 },
-  cellCategory: { flex: 2, paddingRight: 8, color: MUTED },
-  cellYear: { flex: 1, textAlign: "right", paddingRight: 8 },
-  cellQty: { flex: 1, textAlign: "right", paddingRight: 8 },
-  cellPrice: { flex: 2, textAlign: "right", paddingRight: 8 },
-  cellTotal: { flex: 2, textAlign: "right", fontFamily: "Helvetica-Bold" },
-  itemTitle: { fontFamily: "Helvetica-Bold", marginBottom: 2 },
-  itemSub: { color: MUTED, fontSize: 9 },
-  totalsBlock: {
-    marginTop: 12,
-    marginLeft: "auto",
-    width: 240,
+  cellQty: { width: 50 },
+  cellDesc: { flex: 1, paddingRight: 12 },
+  cellUnit: { width: 90, textAlign: "right" },
+  cellAmount: { width: 90, textAlign: "right" },
+  descTitle: {
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 2,
+  },
+  descSub: { color: MUTED, fontSize: 9 },
+
+  totalsWrap: {
+    marginTop: 8,
+    alignItems: "flex-end",
+  },
+  totalsInner: {
+    width: 260,
   },
   totalsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   totalsRowFinal: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 8,
-    marginTop: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: ORANGE_SOFT,
     borderTop: `2px solid ${ORANGE}`,
+    borderBottom: `2px solid ${ORANGE}`,
   },
-  totalLabel: { color: MUTED },
-  totalValue: { fontFamily: "Helvetica-Bold" },
-  grandLabel: { fontFamily: "Helvetica-Bold", fontSize: 12, color: ORANGE },
-  grandValue: { fontFamily: "Helvetica-Bold", fontSize: 12, color: ORANGE },
-  sectionTitle: {
+  grandLabel: {
+    fontFamily: "Helvetica-Bold",
+    color: ORANGE,
+    fontSize: 11,
+  },
+  grandValue: {
+    fontFamily: "Helvetica-Bold",
+    color: ORANGE,
+    fontSize: 11,
+  },
+
+  terms: {
+    marginTop: 48,
+  },
+  termsLabel: {
+    fontFamily: "Helvetica-Bold",
+    color: ORANGE,
+    marginBottom: 6,
+  },
+  termsLine: {
+    color: DARK,
+    marginBottom: 2,
+  },
+
+  pageFooter: {
+    position: "absolute",
+    bottom: 24,
+    left: 56,
+    right: 56,
+    fontSize: 8,
+    color: MUTED,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  // Page 2 — Vehicle details
+  detailsHeader: {
+    marginBottom: 24,
+  },
+  detailsEyebrow: {
     fontSize: 9,
     textTransform: "uppercase",
-    letterSpacing: 1.5,
-    color: MUTED,
-    marginTop: 24,
-    marginBottom: 8,
-    paddingBottom: 4,
-    borderBottom: `1px solid ${BORDER}`,
+    letterSpacing: 2,
+    color: ORANGE,
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 6,
   },
-  description: {
-    lineHeight: 1.5,
-    color: DARK,
+  detailsTitle: {
+    fontSize: 20,
+    fontFamily: "Helvetica-Bold",
     marginBottom: 4,
+  },
+  detailsCategory: {
+    color: MUTED,
+    fontSize: 11,
+  },
+
+  sectionTitle: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: ORANGE,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    marginTop: 20,
+    marginBottom: 10,
+    paddingBottom: 6,
+    borderBottom: `1px solid ${BORDER}`,
   },
   specsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
   },
   specItem: {
-    width: "48%",
+    width: "50%",
     flexDirection: "row",
-    paddingVertical: 4,
-    borderBottom: `1px solid ${BORDER}`,
+    paddingVertical: 5,
+    paddingRight: 8,
   },
-  specLabel: { color: MUTED, width: 90, fontSize: 9 },
-  specValue: { flex: 1, fontSize: 9 },
-  footer: {
-    position: "absolute",
-    bottom: 24,
-    left: 40,
-    right: 40,
-    fontSize: 8,
+  specLabel: {
     color: MUTED,
-    textAlign: "center",
-    lineHeight: 1.4,
+    width: 90,
+    fontSize: 9,
   },
-  footerLink: { color: ORANGE },
+  specValue: {
+    flex: 1,
+    fontSize: 10,
+  },
+  description: {
+    color: DARK,
+    lineHeight: 1.6,
+  },
 });
 
-function formatUsd(cents: number): string {
+function formatUsd(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(cents);
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+  }).format(amount);
 }
 
 function formatInvoiceNumber(secondaryId: number): string {
-  return `INV-${String(secondaryId).padStart(6, "0")}`;
+  return String(secondaryId).padStart(7, "0");
 }
 
 function formatDate(d: Date): string {
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-function truncateDescription(desc: string, max: number): string {
-  if (desc.length <= max) return desc;
-  const cut = desc.slice(0, max);
-  const lastBreak = Math.max(cut.lastIndexOf("\n\n"), cut.lastIndexOf("\n"));
-  const trimTo = lastBreak > max * 0.6 ? lastBreak : cut.lastIndexOf(" ");
-  return cut.slice(0, trimTo > 0 ? trimTo : max).trimEnd() + "…";
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${mm}-${dd}-${yyyy}`;
 }
 
 export interface InvoiceProps {
@@ -211,30 +270,25 @@ export function Invoice({
   listingUrl,
 }: InvoiceProps) {
   const price = listing.sellingPrice;
-  const year = listing.itemAge ?? "—";
-  const categoryName = listing.category?.name ?? "—";
   const invoiceNumber = formatInvoiceNumber(listing.secondaryId);
-  const today = formatDate(new Date());
-  const billToText = (billTo && billTo.trim()) || "[Recipient — fill in]";
-  // Short-line list-style descriptions (ambulances) take more vertical space
-  // per char than prose — use a tighter cap when line count is high.
-  const rawDescription = listing.listingDescription ?? "";
-  const lineCount = rawDescription.split("\n").length;
-  const maxChars = lineCount > 10 ? 800 : 1400;
-  const description = rawDescription
-    ? truncateDescription(rawDescription, maxChars)
-    : null;
+  const now = new Date();
+  const due = new Date(now);
+  due.setDate(due.getDate() + 14);
+  const invoiceDate = formatDate(now);
+  const dueDate = formatDate(due);
+
+  const billLines = (billTo ?? "").split("\n").filter(Boolean);
+  const billName = billLines[0] ?? "[Recipient name]";
+  const billRest = billLines.slice(1);
 
   const specs: Array<[string, string]> = [];
   if (listing.itemBrand) specs.push(["Brand", listing.itemBrand]);
   if (listing.itemAge) specs.push(["Year", String(listing.itemAge)]);
+  if (listing.category?.name)
+    specs.push(["Category", listing.category.name]);
   if (listing.vin) specs.push(["VIN", listing.vin]);
   if (listing.address?.state)
     specs.push(["Location", listing.address.state]);
-  if (listing.deliveryMethod)
-    specs.push(["Delivery", listing.deliveryMethod.replace(/_/g, " ")]);
-  if (listing.isPickupAvailable != null)
-    specs.push(["Pickup", listing.isPickupAvailable ? "Available" : "Not available"]);
   const dims = [
     listing.itemLength && `L ${listing.itemLength}"`,
     listing.itemWidth && `W ${listing.itemWidth}"`,
@@ -243,37 +297,57 @@ export function Invoice({
     .filter(Boolean)
     .join(" × ");
   if (dims) specs.push(["Dimensions", dims]);
+  if (listing.deliveryMethod)
+    specs.push(["Delivery", listing.deliveryMethod.replace(/_/g, " ")]);
+  if (listing.isPickupAvailable != null)
+    specs.push([
+      "Pickup",
+      listing.isPickupAvailable ? "Available" : "Not available",
+    ]);
+  if (listing.appraisedPrice)
+    specs.push(["Appraised value", formatUsd(listing.appraisedPrice)]);
+
+  const categoryName = listing.category?.name ?? "Vehicle";
 
   return (
     <Document
       title={`Invoice ${invoiceNumber} — ${listing.listingTitle}`}
       author="Garage Technologies Inc."
     >
+      {/* ========================= PAGE 1 — INVOICE ========================= */}
       <Page size="LETTER" style={styles.page}>
-        <View style={styles.headerBar} fixed />
-        <View style={styles.headerRow}>
-          <Text style={styles.wordmark}>
-            GARAGE<Text style={styles.wordmarkOrange}>.</Text>
-          </Text>
-          <Text style={styles.invoiceLabel}>INVOICE</Text>
-        </View>
-        <View style={styles.subHeaderRow}>
-          <Text>{invoiceNumber}</Text>
-          <Text>{today}</Text>
+        <View style={styles.topRow}>
+          <View style={styles.fromBlock}>
+            <Text style={styles.fromName}>Garage Technologies Inc.</Text>
+            <Text style={styles.fromLine}>sales@withgarage.com</Text>
+            <Text style={styles.fromLine}>shopgarage.com</Text>
+          </View>
+          <Text style={styles.invoiceTitle}>INVOICE</Text>
         </View>
 
-        <View style={styles.partyBlock}>
-          <View style={styles.partyCol}>
-            <Text style={styles.partyLabel}>Bill to</Text>
-            <Text style={styles.partyBody}>{billToText}</Text>
+        <View style={styles.metaRow}>
+          <View style={styles.billTo}>
+            <Text style={styles.billToLabel}>Bill To</Text>
+            <Text style={styles.billToName}>{billName}</Text>
+            {billRest.map((line, i) => (
+              <Text key={i} style={styles.billToLine}>
+                {line}
+              </Text>
+            ))}
           </View>
-          <View style={styles.partyCol}>
-            <Text style={styles.partyLabel}>From</Text>
-            <Text style={styles.partyBody}>
-              Garage Technologies Inc.{"\n"}
-              sales@withgarage.com{"\n"}
-              shopgarage.com
-            </Text>
+          <View style={styles.metaCol}>
+            <View style={styles.metaRowItem}>
+              <Text style={styles.metaLabel}>Invoice #</Text>
+              <Text style={styles.metaValue}>{invoiceNumber}</Text>
+            </View>
+            <View style={styles.metaRowItem}>
+              <Text style={styles.metaLabel}>Invoice date</Text>
+              <Text style={styles.metaValue}>{invoiceDate}</Text>
+            </View>
+            <View style={styles.metaRowItem}>
+              <Text style={styles.metaLabel}>Due date</Text>
+              <Text style={styles.metaValue}>{dueDate}</Text>
+            </View>
           </View>
         </View>
 
@@ -282,52 +356,73 @@ export function Invoice({
         ) : null}
 
         <View style={styles.tableHeader}>
-          <Text style={styles.cellItem}>Item</Text>
-          <Text style={styles.cellCategory}>Category</Text>
-          <Text style={styles.cellYear}>Year</Text>
-          <Text style={styles.cellQty}>Qty</Text>
-          <Text style={styles.cellPrice}>Unit price</Text>
-          <Text style={styles.cellTotal}>Total</Text>
+          <Text style={styles.cellQty}>QTY</Text>
+          <Text style={styles.cellDesc}>Description</Text>
+          <Text style={styles.cellUnit}>Unit Price</Text>
+          <Text style={styles.cellAmount}>Amount</Text>
         </View>
         <View style={styles.tableRow}>
-          <View style={styles.cellItem}>
-            <Text style={styles.itemTitle}>{listing.listingTitle}</Text>
-            {listing.itemBrand ? (
-              <Text style={styles.itemSub}>Brand: {listing.itemBrand}</Text>
-            ) : null}
+          <Text style={styles.cellQty}>1.00</Text>
+          <View style={styles.cellDesc}>
+            <Text style={styles.descTitle}>{listing.listingTitle}</Text>
+            <Text style={styles.descSub}>{categoryName}</Text>
           </View>
-          <Text style={styles.cellCategory}>{categoryName}</Text>
-          <Text style={styles.cellYear}>{year}</Text>
-          <Text style={styles.cellQty}>1</Text>
-          <Text style={styles.cellPrice}>{formatUsd(price)}</Text>
-          <Text style={styles.cellTotal}>{formatUsd(price)}</Text>
+          <Text style={styles.cellUnit}>{formatUsd(price)}</Text>
+          <Text style={styles.cellAmount}>{formatUsd(price)}</Text>
         </View>
 
-        <View style={styles.totalsBlock}>
-          <View style={styles.totalsRow}>
-            <Text style={styles.totalLabel}>Subtotal</Text>
-            <Text style={styles.totalValue}>{formatUsd(price)}</Text>
-          </View>
-          <View style={styles.totalsRow}>
-            <Text style={styles.totalLabel}>Tax</Text>
-            <Text style={styles.totalValue}>—</Text>
-          </View>
-          <View style={styles.totalsRow}>
-            <Text style={styles.totalLabel}>Shipping</Text>
-            <Text style={styles.totalValue}>To be quoted</Text>
-          </View>
-          <View style={styles.totalsRowFinal}>
-            <Text style={styles.grandLabel}>Total due</Text>
-            <Text style={styles.grandValue}>{formatUsd(price)}</Text>
+        <View style={styles.totalsWrap}>
+          <View style={styles.totalsInner}>
+            <View style={styles.totalsRow}>
+              <Text style={{ color: MUTED }}>Subtotal</Text>
+              <Text>{formatUsd(price)}</Text>
+            </View>
+            <View style={styles.totalsRow}>
+              <Text style={{ color: MUTED }}>Tax</Text>
+              <Text>—</Text>
+            </View>
+            <View style={styles.totalsRow}>
+              <Text style={{ color: MUTED }}>Shipping</Text>
+              <Text>To be quoted</Text>
+            </View>
+            <View style={styles.totalsRowFinal}>
+              <Text style={styles.grandLabel}>Total (USD)</Text>
+              <Text style={styles.grandValue}>{formatUsd(price)}</Text>
+            </View>
           </View>
         </View>
 
-        {description ? (
-          <>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.description}>{description}</Text>
-          </>
-        ) : null}
+        <View style={styles.terms}>
+          <Text style={styles.termsLabel}>Terms and Conditions</Text>
+          <Text style={styles.termsLine}>
+            This is a quote for board approval. Final pricing, taxes, and
+            shipping will be confirmed on order.
+          </Text>
+          <Text style={styles.termsLine}>
+            Please make checks payable to: Garage Technologies Inc.
+          </Text>
+          <Text style={styles.termsLine}>
+            Questions: sales@withgarage.com
+          </Text>
+        </View>
+
+        <View style={styles.pageFooter} fixed>
+          <Text>Invoice {invoiceNumber}</Text>
+          <Text
+            render={({ pageNumber, totalPages }) =>
+              `Page ${pageNumber} of ${totalPages}`
+            }
+          />
+        </View>
+      </Page>
+
+      {/* ========================= PAGE 2 — DETAILS ========================= */}
+      <Page size="LETTER" style={styles.page}>
+        <View style={styles.detailsHeader}>
+          <Text style={styles.detailsEyebrow}>Vehicle details</Text>
+          <Text style={styles.detailsTitle}>{listing.listingTitle}</Text>
+          <Text style={styles.detailsCategory}>{categoryName}</Text>
+        </View>
 
         {specs.length > 0 ? (
           <>
@@ -343,13 +438,30 @@ export function Invoice({
           </>
         ) : null}
 
-        <Text style={styles.footer} fixed>
-          Prepared for board approval. Prices subject to change. Contact
-          sales@withgarage.com for a final quote.{"\n"}
-          {listingUrl ? (
-            <Text style={styles.footerLink}>{listingUrl}</Text>
-          ) : null}
-        </Text>
+        {listing.listingDescription ? (
+          <>
+            <Text style={styles.sectionTitle}>Description</Text>
+            <Text style={styles.description}>
+              {listing.listingDescription}
+            </Text>
+          </>
+        ) : null}
+
+        {listingUrl ? (
+          <>
+            <Text style={styles.sectionTitle}>Source listing</Text>
+            <Text style={{ color: ORANGE }}>{listingUrl}</Text>
+          </>
+        ) : null}
+
+        <View style={styles.pageFooter} fixed>
+          <Text>Invoice {invoiceNumber}</Text>
+          <Text
+            render={({ pageNumber, totalPages }) =>
+              `Page ${pageNumber} of ${totalPages}`
+            }
+          />
+        </View>
       </Page>
     </Document>
   );
