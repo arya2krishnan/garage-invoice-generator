@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 48,
+    marginBottom: 32,
   },
   fromBlock: {
     maxWidth: 260,
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 36,
+    marginBottom: 28,
   },
   billTo: {
     maxWidth: 260,
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
 
   heroImage: {
     width: "100%",
-    height: 160,
+    height: 280,
     objectFit: "cover",
     marginBottom: 20,
     borderRadius: 4,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
 
   terms: {
-    marginTop: 48,
+    marginTop: 32,
   },
   termsLabel: {
     fontFamily: "Helvetica-Bold",
@@ -351,10 +351,6 @@ export function Invoice({
           </View>
         </View>
 
-        {heroImage ? (
-          <Image style={styles.heroImage} src={heroImage} />
-        ) : null}
-
         <View style={styles.tableHeader}>
           <Text style={styles.cellQty}>QTY</Text>
           <Text style={styles.cellDesc}>Description</Text>
@@ -423,6 +419,10 @@ export function Invoice({
           <Text style={styles.detailsTitle}>{listing.listingTitle}</Text>
           <Text style={styles.detailsCategory}>{categoryName}</Text>
         </View>
+
+        {heroImage ? (
+          <Image style={styles.heroImage} src={heroImage} />
+        ) : null}
 
         {specs.length > 0 ? (
           <>
