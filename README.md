@@ -34,11 +34,19 @@ The demo uses Resend's shared `onboarding@resend.dev` sender — no domain verif
 ## How it works
 
 1. The user pastes a listing URL. The browser POSTs to `/api/invoice`.
-2. The route extracts the UUID, fetches the listing from `https://garage-backend.onrender.com/listings/<uuid>`, and renders a PDF with `@react-pdf/renderer`.
-3. The PDF streams back as `application/pdf`; the browser triggers a download.
-4. If an email address is provided, the browser also POSTs to `/api/email-invoice`, which renders the same PDF and sends it as an attachment via Resend.
+2. The route extracts the UUID and fetches two endpoints in parallel:
+   - `GET https://garage-backend.onrender.com/listings/<uuid>` — the listing itself (title, price, images, etc.)
+   - `GET https://garage-backend.onrender.com/categories/<categoryId>/attributes` — the label+type mapping for this category's spec fields
+3. The listing's `ListingAttribute[]` values (keyed by opaque UUIDs like `7d794d55-…`) are decoded through the category-attribute mapping and merged with universal fields (Category, Year, VIN, dimensions, etc.) into a single ordered spec sheet.
+4. `@react-pdf/renderer` generates a two-part PDF: page 1 is the actual invoice (bill-to, meta, line item, totals, terms); page 2+ is the vehicle details — hero image + the decoded spec sheet.
+5. The PDF streams back as `application/pdf` and the browser triggers a download.
+6. If an email address is provided, the browser also POSTs to `/api/email-invoice`, which renders the same PDF and sends it as an attachment via Resend.
 
-The invoice is vehicle-type agnostic: the `listingTitle` and `category.name` fields flow through untouched, so an ambulance listing renders an ambulance invoice with no special casing.
+The invoice is vehicle-type agnostic by construction: every label and value comes from the API. An ambulance shows Mileage, Runs without issue, Has siren system; a fire truck shows Pump size (gpm), Tank size (gal), Engine hours — no per-type special casing in the code.
+
+### Why decode attributes instead of pasting the raw description
+
+Sellers write free-form descriptions (bulleted lists, emoji, marketing copy). Dumping that into an invoice is ugly and inconsistent. Decoding `ListingAttribute[]` gives a structured, comparable spec sheet across every listing — the same information fire departments would read on the website, formatted for print.
 
 ## Architecture
 
@@ -49,22 +57,23 @@ app/
     invoice/route.ts          # POST → streams PDF
     email-invoice/route.ts    # POST → sends PDF via Resend
 lib/
-  Invoice.tsx                 # @react-pdf/renderer Document
-  renderInvoicePdf.tsx        # shared render helper (fetches hero image + resizes)
-  fetchListing.ts             # typed wrapper around Garage's listing API
+  Invoice.tsx                 # @react-pdf/renderer Document (page 1 invoice + page 2 details)
+  renderInvoicePdf.tsx        # fetches hero image + category attributes, calls Invoice
+  fetchListing.ts             # fetchListing + fetchCategoryAttributes
+  decodeSpecs.ts              # merge universal fields + decoded ListingAttribute[] → ordered spec list
   extractUuid.ts              # URL / bare-UUID → UUID
   rateLimit.ts                # in-memory IP sliding-window limiter
-  types.ts                    # Listing types
+  types.ts                    # Listing / CategoryAttribute / DecodedSpec types
 ```
 
 ## Tradeoffs / what I'd change with more time
 
 - **Rate limiting is in-memory** — state is lost on serverless cold starts and isn't shared across instances. Plenty to stop casual abuse of a demo; upgrade to [Upstash Redis + `@upstash/ratelimit`](https://upstash.com/docs/redis/sdks/ratelimit-ts/overview) for real scale.
 - **Email sender is shared** — `onboarding@resend.dev` works out-of-the-box but lands in spam for some recipients. Verify a custom domain in Resend for production.
-- **No listing-attribute decoding** — the API's `ListingAttribute[]` values are keyed by opaque UUIDs (e.g. "pump GPM: 1500"). Resolving would need a second endpoint or a cached mapping. The invoice renders the essentials (title, category, price, description, brand, year, VIN) without it.
+- **Category-attribute mapping fetched per request** — stable metadata that rarely changes; trivial to cache in memory (or with `use cache`) once traffic matters.
 - **Hero image only** — one image looks clean; embedding all 70+ bloats the PDF with little added value for procurement.
-- **No tests** — the two pieces of actual logic (UUID regex, sliding-window limiter) are small; manual verification with the test listings + error cases is proportionate for a take-home.
-- **Description truncation at ~1400 chars** — prevents multi-page overflow on verbose listings. Full description is always available via the listing URL printed in the footer.
+- **No tests** — the two pieces of actual logic (UUID regex, spec decoder) are small; manual verification with the test listings + error cases is proportionate for a take-home.
+- **Raw description dropped** — the free-form seller-written description was too inconsistent to include on a paper invoice. The structured spec sheet covers the same essentials.
 
 ## Stack
 

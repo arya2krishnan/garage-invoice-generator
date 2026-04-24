@@ -1,4 +1,4 @@
-import type { Listing } from "./types";
+import type { CategoryAttribute, Listing } from "./types";
 
 const API_BASE = "https://garage-backend.onrender.com";
 
@@ -33,4 +33,20 @@ export async function fetchListing(uuid: string): Promise<Listing> {
     );
   }
   return (await res.json()) as Listing;
+}
+
+export async function fetchCategoryAttributes(
+  categoryId: string
+): Promise<CategoryAttribute[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/categories/${categoryId}/attributes`,
+      { headers: { accept: "application/json" }, cache: "no-store" }
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as { attributes?: CategoryAttribute[] };
+    return data.attributes ?? [];
+  } catch {
+    return [];
+  }
 }

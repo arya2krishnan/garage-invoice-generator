@@ -6,7 +6,7 @@ import {
   Image,
   StyleSheet,
 } from "@react-pdf/renderer";
-import type { Listing } from "./types";
+import type { DecodedSpec, Listing } from "./types";
 
 const ORANGE = "#f97316";
 const ORANGE_SOFT = "#fff7ed";
@@ -218,21 +218,25 @@ const styles = StyleSheet.create({
   specItem: {
     width: "50%",
     flexDirection: "row",
-    paddingVertical: 5,
-    paddingRight: 8,
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderBottom: `1px solid ${BORDER}`,
+  },
+  specItemRight: {
+    borderLeft: `1px solid ${BORDER}`,
   },
   specLabel: {
-    color: MUTED,
-    width: 90,
-    fontSize: 9,
+    color: DARK,
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
   },
   specValue: {
-    flex: 1,
+    color: MUTED,
     fontSize: 10,
-  },
-  description: {
-    color: DARK,
-    lineHeight: 1.6,
+    textAlign: "right",
+    maxWidth: "60%",
   },
 });
 
@@ -261,6 +265,7 @@ export interface InvoiceProps {
   billTo?: string;
   heroImage?: Buffer | string;
   listingUrl?: string;
+  specs: DecodedSpec[];
 }
 
 export function Invoice({
@@ -268,6 +273,7 @@ export function Invoice({
   billTo,
   heroImage,
   listingUrl,
+  specs,
 }: InvoiceProps) {
   const price = listing.sellingPrice;
   const invoiceNumber = formatInvoiceNumber(listing.secondaryId);
@@ -280,32 +286,6 @@ export function Invoice({
   const billLines = (billTo ?? "").split("\n").filter(Boolean);
   const billName = billLines[0] ?? "[Recipient name]";
   const billRest = billLines.slice(1);
-
-  const specs: Array<[string, string]> = [];
-  if (listing.itemBrand) specs.push(["Brand", listing.itemBrand]);
-  if (listing.itemAge) specs.push(["Year", String(listing.itemAge)]);
-  if (listing.category?.name)
-    specs.push(["Category", listing.category.name]);
-  if (listing.vin) specs.push(["VIN", listing.vin]);
-  if (listing.address?.state)
-    specs.push(["Location", listing.address.state]);
-  const dims = [
-    listing.itemLength && `L ${listing.itemLength}"`,
-    listing.itemWidth && `W ${listing.itemWidth}"`,
-    listing.itemHeight && `H ${listing.itemHeight}"`,
-  ]
-    .filter(Boolean)
-    .join(" × ");
-  if (dims) specs.push(["Dimensions", dims]);
-  if (listing.deliveryMethod)
-    specs.push(["Delivery", listing.deliveryMethod.replace(/_/g, " ")]);
-  if (listing.isPickupAvailable != null)
-    specs.push([
-      "Pickup",
-      listing.isPickupAvailable ? "Available" : "Not available",
-    ]);
-  if (listing.appraisedPrice)
-    specs.push(["Appraised value", formatUsd(listing.appraisedPrice)]);
 
   const categoryName = listing.category?.name ?? "Vehicle";
 
@@ -428,22 +408,19 @@ export function Invoice({
           <>
             <Text style={styles.sectionTitle}>Specifications</Text>
             <View style={styles.specsGrid}>
-              {specs.map(([label, value]) => (
-                <View key={label} style={styles.specItem}>
-                  <Text style={styles.specLabel}>{label}</Text>
-                  <Text style={styles.specValue}>{value}</Text>
+              {specs.map((spec, i) => (
+                <View
+                  key={`${spec.label}-${i}`}
+                  style={[
+                    styles.specItem,
+                    i % 2 === 1 ? styles.specItemRight : {},
+                  ]}
+                >
+                  <Text style={styles.specLabel}>{spec.label}</Text>
+                  <Text style={styles.specValue}>{spec.value}</Text>
                 </View>
               ))}
             </View>
-          </>
-        ) : null}
-
-        {listing.listingDescription ? (
-          <>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.description}>
-              {listing.listingDescription}
-            </Text>
           </>
         ) : null}
 

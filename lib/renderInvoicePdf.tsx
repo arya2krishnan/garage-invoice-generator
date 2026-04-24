@@ -1,6 +1,8 @@
 import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
 import type { ReactElement } from "react";
 import { Invoice } from "./Invoice";
+import { fetchCategoryAttributes } from "./fetchListing";
+import { decodeSpecs } from "./decodeSpecs";
 import type { Listing } from "./types";
 
 // Supabase stores original images; for the hero we want a reasonable size.
@@ -43,7 +45,15 @@ export async function renderInvoicePdf(
   { billTo, listingUrl }: RenderInvoiceOptions = {}
 ): Promise<Buffer> {
   const hero = [...listing.listingImages].sort((a, b) => a.order - b.order)[0];
-  const heroImage = hero ? await fetchImageBuffer(hero.url) : undefined;
+
+  const [heroImage, attributes] = await Promise.all([
+    hero ? fetchImageBuffer(hero.url) : Promise.resolve(undefined),
+    listing.category?.id
+      ? fetchCategoryAttributes(listing.category.id)
+      : Promise.resolve([]),
+  ]);
+
+  const specs = decodeSpecs(listing, attributes);
 
   const element = (
     <Invoice
@@ -51,6 +61,7 @@ export async function renderInvoicePdf(
       billTo={billTo}
       heroImage={heroImage}
       listingUrl={listingUrl}
+      specs={specs}
     />
   ) as unknown as ReactElement<DocumentProps>;
 

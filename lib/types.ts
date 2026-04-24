@@ -15,6 +15,22 @@ export interface ListingAddress {
   state?: string | null;
 }
 
+export interface ListingAttributeValue {
+  id: string;
+  categoryAttributeId: string;
+  value: string;
+}
+
+export type AttributeInputType = "NUMBER" | "BOOLEAN" | "STRING" | string;
+
+export interface CategoryAttribute {
+  id: string;
+  label: string;
+  inputType: AttributeInputType;
+  order: number;
+  isRequired?: boolean;
+}
+
 export interface Listing {
   id: string;
   secondaryId: number;
@@ -36,4 +52,12 @@ export interface Listing {
   category: ListingCategory;
   address: ListingAddress | null;
   listingImages: ListingImage[];
+  ListingAttribute: ListingAttributeValue[];
+}
+
+/** A decoded (label + formatted value) spec row for display. */
+export interface DecodedSpec {
+  label: string;
+  value: string;
+  order: number;
 }
