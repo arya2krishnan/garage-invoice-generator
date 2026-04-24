@@ -89,9 +89,9 @@ const styles = StyleSheet.create({
 
   heroImage: {
     width: "100%",
-    height: 280,
+    height: 150,
     objectFit: "cover",
-    marginBottom: 20,
+    marginBottom: 12,
     borderRadius: 4,
   },
 
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
 
   // Page 2 — Vehicle details
   detailsHeader: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   detailsEyebrow: {
     fontSize: 9,
@@ -260,9 +260,9 @@ const styles = StyleSheet.create({
     color: ORANGE,
     textTransform: "uppercase",
     letterSpacing: 2,
-    marginTop: 20,
-    marginBottom: 10,
-    paddingBottom: 6,
+    marginTop: 8,
+    marginBottom: 6,
+    paddingBottom: 4,
     borderBottom: `1px solid ${BORDER}`,
   },
   specsGrid: {
@@ -274,8 +274,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingVertical: 7,
-    paddingHorizontal: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
     borderBottom: `1px solid ${BORDER}`,
   },
   specItemRight: {
