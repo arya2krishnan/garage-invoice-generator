@@ -89,8 +89,8 @@ const styles = StyleSheet.create({
 
   heroImage: {
     width: "100%",
-    height: 150,
-    objectFit: "cover",
+    maxHeight: 260,
+    objectFit: "contain",
     marginBottom: 12,
     borderRadius: 4,
   },

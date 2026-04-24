@@ -23,7 +23,8 @@ function resizedSupabaseUrl(url: string): string {
   );
   if (resized === url) return url;
   const sep = resized.includes("?") ? "&" : "?";
-  return `${resized}${sep}width=1200&height=800&resize=cover&quality=75`;
+  // Width-only resize preserves the source aspect ratio (no cropping).
+  return `${resized}${sep}width=1400&quality=75`;
 }
 
 async function fetchImageBuffer(url: string): Promise<Buffer | undefined> {
