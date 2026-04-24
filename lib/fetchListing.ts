@@ -1,6 +1,17 @@
-import type { CategoryAttribute, Listing } from "./types";
+import type {
+  CategoryAttribute,
+  Listing,
+  ShippingQuoteResponse,
+  WarrantyDuration,
+  WarrantyQuoteResponse,
+} from "./types";
 
 const API_BASE = "https://garage-backend.onrender.com";
+
+function authHeaders(): Record<string, string> {
+  const token = process.env.GARAGE_API_TOKEN;
+  return token ? { authorization: `Bearer ${token}` } : {};
+}
 
 export class ListingNotFoundError extends Error {
   constructor(uuid: string) {
@@ -48,5 +59,64 @@ export async function fetchCategoryAttributes(
     return data.attributes ?? [];
   } catch {
     return [];
+  }
+}
+
+/**
+ * Freight shipping quote. Requires GARAGE_API_TOKEN. Returns null if the
+ * token is missing, the zip is malformed, or the endpoint fails — callers
+ * should treat the line item as unavailable in that case.
+ */
+export async function fetchShippingQuote(
+  listingId: string,
+  destinationZip: string
+): Promise<number | null> {
+  if (!process.env.GARAGE_API_TOKEN) return null;
+  if (!/^\d{5}(-\d{4})?$/.test(destinationZip)) return null;
+  try {
+    const res = await fetch(`${API_BASE}/shipment/freight/quote`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+        ...authHeaders(),
+      },
+      cache: "no-store",
+      body: JSON.stringify({ listingId, destinationZip }),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as ShippingQuoteResponse;
+    return data.quote?.price ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Warranty quote for one duration. Returns both tier prices (squad/battalion)
+ * so the caller can pick. Requires GARAGE_API_TOKEN.
+ */
+export async function fetchWarrantyQuote(
+  listingId: string,
+  duration: WarrantyDuration,
+  year: number
+): Promise<{ squad: number; battalion: number } | null> {
+  if (!process.env.GARAGE_API_TOKEN) return null;
+  try {
+    const res = await fetch(`${API_BASE}/warranty/quote`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+        ...authHeaders(),
+      },
+      cache: "no-store",
+      body: JSON.stringify({ listingId, duration, year }),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as WarrantyQuoteResponse;
+    return data.quote?.prices ?? null;
+  } catch {
+    return null;
   }
 }

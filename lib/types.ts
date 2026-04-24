@@ -61,3 +61,47 @@ export interface DecodedSpec {
   value: string;
   order: number;
 }
+
+export type WarrantyDuration =
+  | "6 months"
+  | "1 year"
+  | "5 years"
+  | "7 years"
+  | "10 years";
+
+export type WarrantyTier = "squad" | "battalion";
+
+export const WARRANTY_DURATIONS: readonly WarrantyDuration[] = [
+  "6 months",
+  "1 year",
+  "5 years",
+  "7 years",
+  "10 years",
+] as const;
+
+export interface WarrantyQuoteResponse {
+  quote: {
+    prices: Record<WarrantyTier, number>;
+  };
+}
+
+export interface ShippingQuoteResponse {
+  quote: { price: number };
+}
+
+export interface BillTo {
+  name?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+}
+
+export interface InvoiceLineItem {
+  label: string;
+  sublabel?: string;
+  qty: number;
+  unitPrice: number;
+  note?: string; // e.g. "Estimated" for shipping
+}

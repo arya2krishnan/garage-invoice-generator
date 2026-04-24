@@ -6,6 +6,7 @@ import {
 } from "@/lib/fetchListing";
 import { renderInvoicePdf } from "@/lib/renderInvoicePdf";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { parseInvoiceRequest } from "@/lib/parseRequest";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -23,24 +24,25 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { url?: string; billTo?: string };
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
     return Response.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { url, billTo } = body;
-  if (typeof url !== "string") {
-    return Response.json({ error: "Missing 'url' field." }, { status: 400 });
+  const parsed = parseInvoiceRequest(body);
+  if (!parsed.ok) {
+    return Response.json({ error: parsed.error }, { status: 400 });
   }
 
   try {
-    const uuid = extractUuid(url);
+    const uuid = extractUuid(parsed.url);
     const listing = await fetchListing(uuid);
-    const pdf = await renderInvoicePdf(listing, {
-      billTo,
-      listingUrl: url.startsWith("http") ? url : undefined,
+    const { pdf } = await renderInvoicePdf(listing, {
+      billTo: parsed.billTo,
+      listingUrl: parsed.url.startsWith("http") ? parsed.url : undefined,
+      warranty: parsed.warranty,
     });
 
     const filename = `garage-invoice-${listing.secondaryId}.pdf`;

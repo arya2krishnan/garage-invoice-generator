@@ -7,11 +7,11 @@ import {
 } from "@/lib/fetchListing";
 import { renderInvoicePdf } from "@/lib/renderInvoicePdf";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { parseInvoiceRequest, isValidEmail } from "@/lib/parseRequest";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SENDER = "Garage Invoices <onboarding@resend.dev>";
 
 export async function POST(request: Request) {
@@ -27,18 +27,18 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { url?: string; billTo?: string; email?: string };
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
     return Response.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { url, billTo, email } = body;
-  if (typeof url !== "string") {
-    return Response.json({ error: "Missing 'url' field." }, { status: 400 });
+  const parsed = parseInvoiceRequest(body);
+  if (!parsed.ok) {
+    return Response.json({ error: parsed.error }, { status: 400 });
   }
-  if (typeof email !== "string" || !EMAIL_RE.test(email)) {
+  if (!parsed.email || !isValidEmail(parsed.email)) {
     return Response.json(
       { error: "Enter a valid email address." },
       { status: 400 }
@@ -55,18 +55,19 @@ export async function POST(request: Request) {
   }
 
   try {
-    const uuid = extractUuid(url);
+    const uuid = extractUuid(parsed.url);
     const listing = await fetchListing(uuid);
-    const pdf = await renderInvoicePdf(listing, {
-      billTo,
-      listingUrl: url.startsWith("http") ? url : undefined,
+    const { pdf } = await renderInvoicePdf(listing, {
+      billTo: parsed.billTo,
+      listingUrl: parsed.url.startsWith("http") ? parsed.url : undefined,
+      warranty: parsed.warranty,
     });
 
     const filename = `garage-invoice-${listing.secondaryId}.pdf`;
     const resend = new Resend(apiKey);
     const { data, error } = await resend.emails.send({
       from: SENDER,
-      to: email,
+      to: parsed.email,
       subject: `Your Garage invoice for ${listing.listingTitle}`,
       html: `<p>Hi,</p><p>Attached is the PDF invoice for <strong>${escapeHtml(
         listing.listingTitle

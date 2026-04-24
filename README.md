@@ -25,9 +25,10 @@ A bare UUID works too.
 
 ## Environment variables
 
-| Var              | Purpose                                                        | Required?                     |
-| ---------------- | -------------------------------------------------------------- | ----------------------------- |
-| `RESEND_API_KEY` | Send invoices by email via [Resend](https://resend.com) (free tier) | Only for the email button. Downloads work without it. |
+| Var                | Purpose                                                             | Required?                                                                         |
+| ------------------ | ------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `RESEND_API_KEY`   | Send invoices by email via [Resend](https://resend.com) (free tier) | Only for the email button. Downloads work without it.                             |
+| `GARAGE_API_TOKEN` | Bearer token for the protected `/shipment/freight/quote` and `/warranty/quote` endpoints | Only for the estimated shipping + warranty line items. Base invoice works without it. |
 
 The demo uses Resend's shared `onboarding@resend.dev` sender — no domain verification needed. For production, verify your own domain and update `SENDER` in `app/api/email-invoice/route.ts`.
 
@@ -38,9 +39,10 @@ The demo uses Resend's shared `onboarding@resend.dev` sender — no domain verif
    - `GET https://garage-backend.onrender.com/listings/<uuid>` — the listing itself (title, price, images, etc.)
    - `GET https://garage-backend.onrender.com/categories/<categoryId>/attributes` — the label+type mapping for this category's spec fields
 3. The listing's `ListingAttribute[]` values (keyed by opaque UUIDs like `7d794d55-…`) are decoded through the category-attribute mapping and merged with universal fields (Category, Year, VIN, dimensions, etc.) into a single ordered spec sheet.
-4. `@react-pdf/renderer` generates a two-part PDF: page 1 is the actual invoice (bill-to, meta, line item, totals, terms); page 2+ is the vehicle details — hero image + the decoded spec sheet.
-5. The PDF streams back as `application/pdf` and the browser triggers a download.
-6. If an email address is provided, the browser also POSTs to `/api/email-invoice`, which renders the same PDF and sends it as an attachment via Resend.
+4. If the form includes a ZIP code, we also hit `POST /shipment/freight/quote` for a freight estimate. If a warranty duration is selected, we hit `POST /warranty/quote` for a squad/battalion price. Both endpoints require `GARAGE_API_TOKEN`; failures (missing token, 401, etc.) silently skip the line item so the base invoice still generates.
+5. `@react-pdf/renderer` generates a two-part PDF: page 1 is the actual invoice (bill-to, meta, line items, totals, terms); page 2+ is the vehicle details — hero image + the decoded spec sheet. Estimated shipping / warranty rows are labeled "Estimated" with a disclaimer in the Terms block.
+6. The PDF streams back as `application/pdf` and the browser triggers a download.
+7. If an email address is provided, the browser also POSTs to `/api/email-invoice`, which renders the same PDF and sends it as an attachment via Resend.
 
 The invoice is vehicle-type agnostic by construction: every label and value comes from the API. An ambulance shows Mileage, Runs without issue, Has siren system; a fire truck shows Pump size (gpm), Tank size (gal), Engine hours — no per-type special casing in the code.
 
@@ -58,12 +60,13 @@ app/
     email-invoice/route.ts    # POST → sends PDF via Resend
 lib/
   Invoice.tsx                 # @react-pdf/renderer Document (page 1 invoice + page 2 details)
-  renderInvoicePdf.tsx        # fetches hero image + category attributes, calls Invoice
-  fetchListing.ts             # fetchListing + fetchCategoryAttributes
+  renderInvoicePdf.tsx        # fans out: hero image + attrs + shipping + warranty → Invoice
+  fetchListing.ts             # fetchListing, fetchCategoryAttributes, fetchShippingQuote, fetchWarrantyQuote
   decodeSpecs.ts              # merge universal fields + decoded ListingAttribute[] → ordered spec list
   extractUuid.ts              # URL / bare-UUID → UUID
+  parseRequest.ts             # narrow/validate the JSON body for both API routes
   rateLimit.ts                # in-memory IP sliding-window limiter
-  types.ts                    # Listing / CategoryAttribute / DecodedSpec types
+  types.ts                    # Listing / CategoryAttribute / DecodedSpec / BillTo / Warranty types
 ```
 
 ## Tradeoffs / what I'd change with more time

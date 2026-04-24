@@ -6,7 +6,7 @@ import {
   Image,
   StyleSheet,
 } from "@react-pdf/renderer";
-import type { DecodedSpec, Listing } from "./types";
+import type { BillTo, DecodedSpec, InvoiceLineItem, Listing } from "./types";
 
 const ORANGE = "#f97316";
 const ORANGE_SOFT = "#fff7ed";
@@ -160,11 +160,23 @@ const styles = StyleSheet.create({
   termsLabel: {
     fontFamily: "Helvetica-Bold",
     color: ORANGE,
-    marginBottom: 6,
+    marginBottom: 8,
   },
-  termsLine: {
+  termsItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 4,
+    paddingRight: 8,
+  },
+  termsBullet: {
+    color: ORANGE,
+    fontFamily: "Helvetica-Bold",
+    width: 18,
+    flexShrink: 0,
+  },
+  termsText: {
     color: DARK,
-    marginBottom: 2,
+    flex: 1,
   },
 
   pageFooter: {
@@ -262,10 +274,35 @@ function formatDate(d: Date): string {
 
 export interface InvoiceProps {
   listing: Listing;
-  billTo?: string;
+  billTo?: BillTo;
   heroImage?: Buffer | string;
   listingUrl?: string;
   specs: DecodedSpec[];
+  lineItems: InvoiceLineItem[];
+  shipping: { price: number; destinationZip: string } | null;
+  tax: { amount: number; rate: number; state: string } | null;
+}
+
+function renderBillToLines(billTo: BillTo | undefined): {
+  name: string;
+  rest: string[];
+} {
+  if (!billTo) return { name: "[Recipient name]", rest: [] };
+  const name = billTo.name?.trim() || "[Recipient name]";
+  const rest: string[] = [];
+  if (billTo.line1?.trim()) rest.push(billTo.line1.trim());
+  if (billTo.line2?.trim()) rest.push(billTo.line2.trim());
+  const city = billTo.city?.trim();
+  const state = billTo.state?.trim();
+  const zip = billTo.zip?.trim();
+  const cityLine = [
+    [city, state].filter(Boolean).join(", "),
+    zip,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  if (cityLine) rest.push(cityLine);
+  return { name, rest };
 }
 
 export function Invoice({
@@ -274,8 +311,10 @@ export function Invoice({
   heroImage,
   listingUrl,
   specs,
+  lineItems,
+  shipping,
+  tax,
 }: InvoiceProps) {
-  const price = listing.sellingPrice;
   const invoiceNumber = formatInvoiceNumber(listing.secondaryId);
   const now = new Date();
   const due = new Date(now);
@@ -283,11 +322,17 @@ export function Invoice({
   const invoiceDate = formatDate(now);
   const dueDate = formatDate(due);
 
-  const billLines = (billTo ?? "").split("\n").filter(Boolean);
-  const billName = billLines[0] ?? "[Recipient name]";
-  const billRest = billLines.slice(1);
+  const { name: billName, rest: billRest } = renderBillToLines(billTo);
 
+  const subtotal = lineItems.reduce((s, li) => s + li.qty * li.unitPrice, 0);
+  const shippingAmt = shipping?.price ?? 0;
+  const taxAmt = tax?.amount ?? 0;
+  const total = subtotal + shippingAmt + taxAmt;
   const categoryName = listing.category?.name ?? "Vehicle";
+  const hasWarrantyRow = lineItems.some((li) =>
+    li.label.toLowerCase().includes("warranty")
+  );
+  const hasEstimates = Boolean(shipping) || Boolean(tax) || hasWarrantyRow;
 
   return (
     <Document
@@ -337,49 +382,95 @@ export function Invoice({
           <Text style={styles.cellUnit}>Unit Price</Text>
           <Text style={styles.cellAmount}>Amount</Text>
         </View>
-        <View style={styles.tableRow}>
-          <Text style={styles.cellQty}>1.00</Text>
-          <View style={styles.cellDesc}>
-            <Text style={styles.descTitle}>{listing.listingTitle}</Text>
-            <Text style={styles.descSub}>{categoryName}</Text>
+        {lineItems.map((li, i) => (
+          <View key={i} style={styles.tableRow}>
+            <Text style={styles.cellQty}>{li.qty.toFixed(2)}</Text>
+            <View style={styles.cellDesc}>
+              <Text style={styles.descTitle}>{li.label}</Text>
+              {li.sublabel ? (
+                <Text style={styles.descSub}>{li.sublabel}</Text>
+              ) : null}
+            </View>
+            <Text style={styles.cellUnit}>{formatUsd(li.unitPrice)}</Text>
+            <Text style={styles.cellAmount}>
+              {formatUsd(li.qty * li.unitPrice)}
+            </Text>
           </View>
-          <Text style={styles.cellUnit}>{formatUsd(price)}</Text>
-          <Text style={styles.cellAmount}>{formatUsd(price)}</Text>
-        </View>
+        ))}
 
         <View style={styles.totalsWrap}>
           <View style={styles.totalsInner}>
             <View style={styles.totalsRow}>
               <Text style={{ color: MUTED }}>Subtotal</Text>
-              <Text>{formatUsd(price)}</Text>
+              <Text>{formatUsd(subtotal)}</Text>
             </View>
             <View style={styles.totalsRow}>
-              <Text style={{ color: MUTED }}>Tax</Text>
-              <Text>—</Text>
+              <Text style={{ color: MUTED }}>
+                {shipping
+                  ? `Estimated shipping (ZIP ${shipping.destinationZip})`
+                  : "Shipping"}
+              </Text>
+              <Text>{shipping ? formatUsd(shipping.price) : "—"}</Text>
             </View>
             <View style={styles.totalsRow}>
-              <Text style={{ color: MUTED }}>Shipping</Text>
-              <Text>To be quoted</Text>
+              <Text style={{ color: MUTED }}>
+                {tax
+                  ? `Estimated tax (${tax.state} ${(tax.rate * 100).toFixed(
+                      2
+                    )}%)`
+                  : "Tax"}
+              </Text>
+              <Text>{tax ? formatUsd(tax.amount) : "—"}</Text>
             </View>
             <View style={styles.totalsRowFinal}>
               <Text style={styles.grandLabel}>Total (USD)</Text>
-              <Text style={styles.grandValue}>{formatUsd(price)}</Text>
+              <Text style={styles.grandValue}>{formatUsd(total)}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.terms}>
           <Text style={styles.termsLabel}>Terms and Conditions</Text>
-          <Text style={styles.termsLine}>
-            This is a quote for board approval. Final pricing, taxes, and
-            shipping will be confirmed on order.
-          </Text>
-          <Text style={styles.termsLine}>
-            Please make checks payable to: Garage Technologies Inc.
-          </Text>
-          <Text style={styles.termsLine}>
-            Questions: sales@withgarage.com
-          </Text>
+          {(() => {
+            const items: string[] = [];
+            items.push(
+              "This is a quote for board approval. Final pricing, taxes, and shipping will be confirmed on order."
+            );
+            if (hasEstimates) {
+              const parts: string[] = [];
+              if (shipping) parts.push("shipping");
+              if (tax) parts.push("sales tax");
+              if (hasWarrantyRow) parts.push("warranty");
+              const joined =
+                parts.length === 1
+                  ? parts[0]
+                  : parts.length === 2
+                  ? `${parts[0]} and ${parts[1]}`
+                  : `${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]}`;
+              const zipNote = shipping
+                ? ` based on destination ZIP ${shipping.destinationZip}`
+                : "";
+              const taxNote = tax
+                ? " Sales tax is a state-rate estimate; local rates and government tax-exemption may apply."
+                : "";
+              items.push(
+                `Estimated ${joined}${zipNote}. Prices are subject to change; Garage will confirm the final quote on order.${taxNote}`
+              );
+            }
+            items.push(
+              "Please make checks payable to: Garage Technologies Inc."
+            );
+            items.push("Questions: sales@withgarage.com");
+            if (listingUrl) {
+              items.push(`Source listing: ${listingUrl}`);
+            }
+            return items.map((text, i) => (
+              <View key={i} style={styles.termsItem}>
+                <Text style={styles.termsBullet}>{i + 1}.</Text>
+                <Text style={styles.termsText}>{text}</Text>
+              </View>
+            ));
+          })()}
         </View>
 
         <View style={styles.pageFooter} fixed>
@@ -421,13 +512,6 @@ export function Invoice({
                 </View>
               ))}
             </View>
-          </>
-        ) : null}
-
-        {listingUrl ? (
-          <>
-            <Text style={styles.sectionTitle}>Source listing</Text>
-            <Text style={{ color: ORANGE }}>{listingUrl}</Text>
           </>
         ) : null}
 
