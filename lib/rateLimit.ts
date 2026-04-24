@@ -4,12 +4,12 @@
 
 const buckets = new Map<string, number[]>();
 
-export interface RateLimitConfig {
+interface RateLimitConfig {
   limit: number;
   windowMs: number;
 }
 
-export interface RateLimitResult {
+interface RateLimitResult {
   ok: boolean;
   retryAfterSeconds?: number;
 }

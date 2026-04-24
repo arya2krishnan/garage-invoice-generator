@@ -6,11 +6,11 @@ import {
   downloadPdf,
   emailPdf,
   type InvoiceFormState,
-} from "@/lib/invoiceClient";
+} from "./client";
 import { BillToSection } from "./BillToSection";
 import { WarrantySection } from "./WarrantySection";
 import { StatusBanner, type Status } from "./StatusBanner";
-import { inputClass, labelClass } from "./formStyles";
+import { inputClass, labelClass } from "./styles";
 
 const INITIAL: InvoiceFormState = {
   url: "",

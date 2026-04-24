@@ -1,16 +1,10 @@
-import type {
-  CategoryAttribute,
-  DecodedSpec,
-  Listing,
-} from "./types";
+import type { CategoryAttribute, DecodedSpec, Listing } from "@/lib/types";
 
 // Match the website's visual cue: green check / red X instead of Yes / No.
-// Helvetica supports these Unicode glyphs; we color them in Invoice.tsx by
-// detecting the value.
+// DetailsPage detects these exact strings and swaps in an SVG icon — plain
+// text would fall back to the Helvetica glyph which Helvetica lacks.
 const BOOL_YES = "✓";
 const BOOL_NO = "✗";
-export const BOOL_YES_GLYPH = BOOL_YES;
-export const BOOL_NO_GLYPH = BOOL_NO;
 
 function titleCase(s: string): string {
   return s

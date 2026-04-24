@@ -1,4 +1,4 @@
-import type { WarrantyDuration, WarrantyTier } from "./types";
+import type { WarrantyDuration, WarrantyTier } from "@/lib/types";
 
 export interface InvoiceFormState {
   url: string;

@@ -1,4 +1,4 @@
-export interface UsState {
+interface UsState {
   code: string;
   name: string;
 }

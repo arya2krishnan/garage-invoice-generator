@@ -1,6 +1,6 @@
-import type { InvoiceFormState } from "@/lib/invoiceClient";
 import { US_STATES } from "@/lib/usStates";
-import { inputClass, labelClass, sectionTitleClass } from "./formStyles";
+import type { InvoiceFormState } from "./client";
+import { inputClass, labelClass, sectionTitleClass } from "./styles";
 
 interface Props {
   form: InvoiceFormState;

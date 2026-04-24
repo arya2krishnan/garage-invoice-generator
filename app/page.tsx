@@ -1,7 +1,7 @@
 import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooter } from "./components/SiteFooter";
 import { HowItWorks } from "./components/HowItWorks";
-import { InvoiceForm } from "./components/InvoiceForm";
+import { InvoiceForm } from "./components/form/InvoiceForm";
 
 export default function Home() {
   return (

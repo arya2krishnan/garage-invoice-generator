@@ -1,20 +1,20 @@
 import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
 import type { ReactElement } from "react";
-import { Invoice } from "./Invoice";
 import {
   fetchCategoryAttributes,
   fetchShippingQuote,
   fetchWarrantyQuote,
-} from "./fetchListing";
-import { decodeSpecs } from "./decodeSpecs";
-import { getStateTaxRate, resolveStateFromZip } from "./salesTax";
+} from "@/lib/garage";
+import { fetchSalesTax } from "@/lib/salesTax";
 import type {
   BillTo,
   InvoiceLineItem,
   Listing,
   WarrantyDuration,
   WarrantyTier,
-} from "./types";
+} from "@/lib/types";
+import { Invoice } from "../Invoice";
+import { decodeSpecs } from "./decodeSpecs";
 
 function resizedSupabaseUrl(url: string): string {
   const resized = url.replace(
@@ -23,8 +23,6 @@ function resizedSupabaseUrl(url: string): string {
   );
   if (resized === url) return url;
   const sep = resized.includes("?") ? "&" : "?";
-  // Fit inside a landscape box without cropping (contain preserves aspect;
-  // bare `width` alone gave degenerate tall-aspect output for some sources).
   return `${resized}${sep}width=1400&height=900&resize=contain&quality=75`;
 }
 
@@ -55,28 +53,17 @@ export interface RenderInvoiceOptions {
   };
 }
 
-export interface RenderInvoiceResult {
-  pdf: Buffer;
-  shippingAttempted: boolean;
-  shippingPrice: number | null;
-  warrantyAttempted: boolean;
-  warrantyPrice: number | null;
-  taxState: string | null;
-  taxRate: number | null;
-  taxAmount: number | null;
-}
-
 export async function renderInvoicePdf(
   listing: Listing,
   { billTo, listingUrl, warranty }: RenderInvoiceOptions = {}
-): Promise<RenderInvoiceResult> {
+): Promise<Buffer> {
   const hero = [...listing.listingImages].sort((a, b) => a.order - b.order)[0];
-
   const destinationZip = billTo?.zip?.trim();
   const shouldQuoteShipping = Boolean(destinationZip);
   const shouldQuoteWarranty = Boolean(warranty && listing.itemAge);
+  const shouldQuoteTax = Boolean(destinationZip);
 
-  const [heroImage, attributes, shippingPrice, warrantyPrices] =
+  const [heroImage, attributes, shippingPrice, warrantyPrices, salesTax] =
     await Promise.all([
       hero ? fetchImageBuffer(hero.url) : Promise.resolve(undefined),
       listing.category?.id
@@ -88,16 +75,10 @@ export async function renderInvoicePdf(
       shouldQuoteWarranty
         ? fetchWarrantyQuote(listing.id, warranty!.duration, listing.itemAge!)
         : Promise.resolve(null),
+      shouldQuoteTax ? fetchSalesTax(destinationZip!) : Promise.resolve(null),
     ]);
 
   const specs = decodeSpecs(listing, attributes);
-
-  // Resolve state for tax: prefer the explicit form state; fall back to zip lookup.
-  let taxState: string | null = billTo?.state?.trim().toUpperCase() || null;
-  if (!taxState && destinationZip) {
-    taxState = await resolveStateFromZip(destinationZip);
-  }
-  const taxRate = getStateTaxRate(taxState);
 
   const lineItems: InvoiceLineItem[] = [
     {
@@ -121,7 +102,11 @@ export async function renderInvoicePdf(
   }
 
   // Tax is estimated on the vehicle price only — warranty is a service and
-  // shipping is not a taxable item.
+  // shipping is not a taxable item. Prefer total_rate (premium) if present,
+  // else the free-tier state_rate.
+  const taxRate = salesTax
+    ? salesTax.totalRate ?? salesTax.stateRate
+    : null;
   const taxAmount =
     taxRate != null
       ? Number((listing.sellingPrice * taxRate).toFixed(2))
@@ -141,22 +126,16 @@ export async function renderInvoicePdf(
           : null
       }
       tax={
-        taxAmount != null
-          ? { amount: taxAmount, rate: taxRate!, state: taxState! }
+        taxAmount != null && taxRate != null && salesTax
+          ? {
+              amount: taxAmount,
+              rate: taxRate,
+              label: `ZIP ${salesTax.zipCode}`,
+            }
           : null
       }
     />
   ) as unknown as ReactElement<DocumentProps>;
 
-  const pdf = await renderToBuffer(element);
-  return {
-    pdf,
-    shippingAttempted: shouldQuoteShipping,
-    shippingPrice,
-    warrantyAttempted: shouldQuoteWarranty,
-    warrantyPrice,
-    taxState,
-    taxRate,
-    taxAmount,
-  };
+  return renderToBuffer(element);
 }

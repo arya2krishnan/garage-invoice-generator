@@ -3,8 +3,8 @@ import {
   fetchListing,
   ListingNotFoundError,
   ListingFetchError,
-} from "@/lib/fetchListing";
-import { renderInvoicePdf } from "@/lib/renderInvoicePdf";
+} from "@/lib/garage";
+import { renderInvoicePdf } from "@/app/components/invoice/utils/render";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { parseInvoiceRequest } from "@/lib/parseRequest";
 
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   try {
     const uuid = extractUuid(parsed.url);
     const listing = await fetchListing(uuid);
-    const { pdf } = await renderInvoicePdf(listing, {
+    const pdf = await renderInvoicePdf(listing, {
       billTo: parsed.billTo,
       listingUrl: parsed.url.startsWith("http") ? parsed.url : undefined,
       warranty: parsed.warranty,

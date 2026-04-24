@@ -15,16 +15,13 @@ const LOGO_PATHS = [
 
 const LOGO_FILL = "#F97315";
 
-export interface GarageLogoProps {
+interface LogoProps {
   /** Rendered width in PDF units; aspect ratio is preserved. */
   width?: number;
   color?: string;
 }
 
-export function GarageLogo({
-  width = 90,
-  color = LOGO_FILL,
-}: GarageLogoProps) {
+export function Logo({ width = 90, color = LOGO_FILL }: LogoProps) {
   const height = (width * 187) / 707;
   return (
     <Svg width={width} height={height} viewBox="0 0 707 187">
