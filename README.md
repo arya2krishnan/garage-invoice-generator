@@ -46,10 +46,6 @@ The demo uses Resend's shared `onboarding@resend.dev` sender — no domain verif
 
 The invoice is vehicle-type agnostic by construction: every label and value comes from the API. An ambulance shows Mileage, Runs without issue, Has siren system; a fire truck shows Pump size (gpm), Tank size (gal), Engine hours — no per-type special casing in the code.
 
-### Why decode attributes instead of pasting the raw description
-
-Sellers write free-form descriptions (bulleted lists, emoji, marketing copy). Dumping that into an invoice is ugly and inconsistent. Decoding `ListingAttribute[]` gives a structured, comparable spec sheet across every listing — the same information fire departments would read on the website, formatted for print.
-
 ## Architecture
 
 ```
@@ -72,11 +68,6 @@ lib/
 ## Tradeoffs / what I'd change with more time
 
 - **Rate limiting is in-memory** — state is lost on serverless cold starts and isn't shared across instances. Plenty to stop casual abuse of a demo; upgrade to [Upstash Redis + `@upstash/ratelimit`](https://upstash.com/docs/redis/sdks/ratelimit-ts/overview) for real scale.
-- **Email sender is shared** — `onboarding@resend.dev` works out-of-the-box but lands in spam for some recipients. Verify a custom domain in Resend for production.
-- **Category-attribute mapping fetched per request** — stable metadata that rarely changes; trivial to cache in memory (or with `use cache`) once traffic matters.
-- **Hero image only** — one image looks clean; embedding all 70+ bloats the PDF with little added value for procurement.
-- **No tests** — the two pieces of actual logic (UUID regex, spec decoder) are small; manual verification with the test listings + error cases is proportionate for a take-home.
-- **Raw description dropped** — the free-form seller-written description was too inconsistent to include on a paper invoice. The structured spec sheet covers the same essentials.
 
 ## Stack
 
