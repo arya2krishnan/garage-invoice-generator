@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 32,
+    marginBottom: 20,
   },
   fromBlock: {
     maxWidth: 260,
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 28,
+    marginBottom: 20,
   },
   billTo: {
     maxWidth: 260,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   },
 
   terms: {
-    marginTop: 20,
+    marginTop: 14,
   },
   termsLabel: {
     fontFamily: "Helvetica-Bold",
@@ -419,7 +419,7 @@ export function Invoice({
       <Page size="LETTER" style={styles.page}>
         <View style={styles.topRow}>
           <View style={styles.fromBlock}>
-            <View style={{ marginBottom: 8 }}>
+            <View style={{ marginBottom: 4 }}>
               <GarageLogo width={90} />
             </View>
             <Text style={styles.fromLine}>Garage Technologies Inc.</Text>
