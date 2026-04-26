@@ -1,6 +1,4 @@
-// In-memory sliding-window limiter. Honest tradeoff: state lost on cold start
-// and not shared across serverless instances. Sufficient to stop casual abuse
-// on a demo; upgrade to Upstash + @upstash/ratelimit for multi-instance deploys.
+// In-memory sliding-window limiter. Sufficient to stop casual abuse on a demo
 
 const buckets = new Map<string, number[]>();
 

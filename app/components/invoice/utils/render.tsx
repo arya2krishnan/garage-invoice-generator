@@ -91,7 +91,7 @@ export async function renderInvoicePdf(
   const warrantyPrice =
     warranty && warrantyPrices ? warrantyPrices[warranty.tier] : null;
   if (warranty && warrantyPrice != null) {
-    const tierLabel = warranty.tier === "battalion" ? "Battalion" : "Squad";
+    const tierLabel = warranty.tier === "premium" ? "Premium" : "Standard";
     lineItems.push({
       label: `Estimated extended warranty — ${warranty.duration}`,
       sublabel: `${tierLabel} tier`,

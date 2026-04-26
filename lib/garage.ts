@@ -63,9 +63,9 @@ export async function fetchCategoryAttributes(
 }
 
 /**
- * Freight shipping quote. Requires GARAGE_API_TOKEN. Returns null if the
- * token is missing, the zip is malformed, or the endpoint fails — callers
- * should treat the line item as unavailable in that case.
+ * Freight shipping quote. Requires GARAGE_API_TOKEN (which is sign-in token). 
+ * Returns null if endpoint fails
+ * Treaded as unavailable in that case.
  */
 export async function fetchShippingQuote(
   listingId: string,
@@ -93,14 +93,14 @@ export async function fetchShippingQuote(
 }
 
 /**
- * Warranty quote for one duration. Returns both tier prices (squad/battalion)
+ * Warranty quote for one duration. Returns both tier prices standard or premium
  * so the caller can pick. Requires GARAGE_API_TOKEN.
  */
 export async function fetchWarrantyQuote(
   listingId: string,
   duration: WarrantyDuration,
   year: number
-): Promise<{ squad: number; battalion: number } | null> {
+): Promise<{ standard: number; premium: number } | null> {
   if (!process.env.GARAGE_API_TOKEN) return null;
   try {
     const res = await fetch(`${API_BASE}/warranty/quote`, {
@@ -115,7 +115,9 @@ export async function fetchWarrantyQuote(
     });
     if (!res.ok) return null;
     const data = (await res.json()) as WarrantyQuoteResponse;
-    return data.quote?.prices ?? null;
+    const prices = data.quote?.prices;
+    if (!prices) return null;
+    return { standard: prices.squad, premium: prices.battalion };
   } catch {
     return null;
   }

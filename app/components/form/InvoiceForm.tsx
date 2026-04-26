@@ -21,7 +21,7 @@ const INITIAL: InvoiceFormState = {
   state: "",
   zip: "",
   warrantyDuration: "",
-  warrantyTier: "squad",
+  warrantyTier: "standard",
   email: "",
 };
 

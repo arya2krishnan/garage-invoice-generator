@@ -55,7 +55,6 @@ export interface Listing {
   ListingAttribute: ListingAttributeValue[];
 }
 
-/** A decoded (label + formatted value) spec row for display. */
 export interface DecodedSpec {
   label: string;
   value: string;
@@ -69,7 +68,7 @@ export type WarrantyDuration =
   | "7 years"
   | "10 years";
 
-export type WarrantyTier = "squad" | "battalion";
+export type WarrantyTier = "standard" | "premium";
 
 export const WARRANTY_DURATIONS: readonly WarrantyDuration[] = [
   "6 months",
@@ -79,9 +78,11 @@ export const WARRANTY_DURATIONS: readonly WarrantyDuration[] = [
   "10 years",
 ] as const;
 
+export type ResponseWarrantyTier = "squad" | "battalion";
+
 export interface WarrantyQuoteResponse {
   quote: {
-    prices: Record<WarrantyTier, number>;
+    prices: Record<ResponseWarrantyTier, number>;
   };
 }
 
@@ -103,5 +104,5 @@ export interface InvoiceLineItem {
   sublabel?: string;
   qty: number;
   unitPrice: number;
-  note?: string; // e.g. "Estimated" for shipping
+  note?: string; 
 }

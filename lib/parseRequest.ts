@@ -31,19 +31,19 @@ function parseBillTo(v: unknown): BillTo | undefined {
     state: strOrUndef(v.state),
     zip: strOrUndef(v.zip),
   };
-  // Return undefined if every field is empty.
+
   const hasAny = Object.values(out).some((x) => x !== undefined);
   return hasAny ? out : undefined;
 }
 
-const WARRANTY_TIERS: readonly WarrantyTier[] = ["squad", "battalion"];
+const WARRANTY_TIERS: readonly WarrantyTier[] = ["standard", "premium"];
 
 function parseWarranty(
   v: unknown
 ): { duration: WarrantyDuration; tier: WarrantyTier } | undefined {
   if (!isObject(v)) return undefined;
   const duration = v.duration;
-  const tier = v.tier ?? "squad";
+  const tier = v.tier ?? "standard";
   if (typeof duration !== "string") return undefined;
   if (!WARRANTY_DURATIONS.includes(duration as WarrantyDuration)) return undefined;
   if (typeof tier !== "string" || !WARRANTY_TIERS.includes(tier as WarrantyTier))

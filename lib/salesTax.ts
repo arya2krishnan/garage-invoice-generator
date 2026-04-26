@@ -1,9 +1,5 @@
 // Sales tax lookup via api.api-ninjas.com/v1/salestax.
-// Free tier returns { zip_code, state_rate }; premium also returns city_rate,
-// county_rate, additional_rate, total_rate. We read total_rate if present and
-// fall back to state_rate. Missing key, malformed ZIP, or a non-200 response
-// all return null — the caller hides the tax line item in that case.
-
+// returns { zip_code, state_rate }; 
 const API_URL = "https://api.api-ninjas.com/v1/salestax";
 
 export interface SalesTaxRate {
@@ -14,8 +10,7 @@ export interface SalesTaxRate {
 
 interface ApiNinjasRow {
   zip_code: string;
-  // Free tier returns rates as strings ("0.0625"); premium-only fields come
-  // back as the literal string "This field is for premium subscribers only".
+  // Free tier returns rates as strings ("0.0625"); 
   state_rate: string | number;
   total_rate?: string | number;
 }

@@ -60,8 +60,8 @@ export function WarrantySection({ form, update, disabled }: Props) {
             className={inputClass}
             disabled={disabled || !wantsWarranty}
           >
-            <option value="squad">Squad (standard)</option>
-            <option value="battalion">Battalion (premium)</option>
+            <option value="standard">Standard</option>
+            <option value="premium">Premium</option>
           </select>
         </div>
       </div>
